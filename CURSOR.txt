@@ -1,0 +1,28 @@
+# Cursor Rules — ML Stock Simulator
+
+1) Source of truth
+- Always read `AGENTS.md` first.
+- Follow the roadmap + non-negotiables in `AGENTS.md`.
+- If anything is unclear, ask ONE blocking question, then proceed.
+
+2) Workflow (required)
+- Plan → Execute → Verify for every change.
+- Plan: list files you will create/modify before editing.
+- Execute: implement one small feature at a time.
+- Verify: run the app and sanity-check the affected flow.
+
+3) MVP scope guardrails
+- Do NOT add pages/features outside the MVP without explicit user approval.
+- No live trading, no buy/sell recommendations; keep disclaimer visible.
+- Keep only 2 horizons: 6 months and 12 months.
+- Target is return % and uses 10 years of history (monthly internally).
+
+4) Code quality
+- Prefer TypeScript, no `any`.
+- Keep business logic in `lib/` (data, models, backtest), UI in `components/`.
+- Handle errors explicitly and show user-friendly error states.
+
+5) Verification commands (use what exists in package.json)
+- `npm run dev` (manual clickthrough)
+- `npm run lint` (if configured)
+- `npm run build` before deploy (if time)

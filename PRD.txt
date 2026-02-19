@@ -1,0 +1,77 @@
+# PRD — ML Stock Simulator (MVP)
+
+## Product Overview
+**Product:** ML Stock Simulator  
+**One-liner:** A market simulation web app that compares baseline forecasting models on 10 years of data and presents 6-month and 12-month return-% forecasts with bearish/stable/bullish scenarios.
+
+## What this is / isn’t
+- This is an educational simulator + model comparison dashboard.
+- This is NOT live trading, not a brokerage tool, and not financial advice.
+
+## Target Users
+- Primary: Recruiters / hiring managers evaluating SWE + ML-adjacent skills (clean UI, data pipeline, correctness, clarity).
+- Secondary: Students/enthusiasts who want to explore forecasts and uncertainty.
+
+## User Journey (core loop)
+1. User selects a ticker from a curated list (5–10).
+2. User selects a forecast horizon (6 months or 1 year).
+3. User runs “Simulate” to fetch history, run models, and compute results.
+4. User views:
+   - Model comparison metrics
+   - A forecast plot with 3 scenarios: bearish / stable / bullish
+
+## MVP Must-Have Features (P0)
+### P0.1 Ticker selection + constraints
+- Curated list of 5–10 tickers (hardcoded list in MVP).
+- Horizon selector: 6 months or 12 months.
+- “Simulate” button triggers pipeline.
+
+### P0.2 Data retrieval + preprocessing (10y)
+- Fetch 10 years of historical data for the selected ticker.
+- Use monthly frequency internally (resample) to support 6/12-step horizons.
+- Clean missing values and ensure time index ordering.
+
+### P0.3 Model execution (baseline models only)
+- Run 2–3 baseline models (no custom ML invention in v1).
+- Output point forecasts per horizon for each model (return %).
+- Create a “Scenario Aggregator” that combines model outputs into:
+  - Bearish
+  - Stable
+  - Bullish
+  (Defined consistently and documented in the UI.)
+
+### P0.4 Evaluation / backtest results (simulator credibility)
+- Run a time-respecting evaluation (walk-forward/rolling split) appropriate for monthly data.
+- Show a leaderboard table with metrics (e.g., MAE / RMSE on return %).
+- Show a simple chart: actual vs predicted (for the backtest portion).
+
+### P0.5 Results UI (clean + polished)
+- Results page/section includes:
+  - Summary cards (selected ticker, horizon, date range)
+  - Model comparison table
+  - Scenario forecast visualization (3 lines/bands)
+  - “How scenarios are computed” small explainer text
+
+### P0.6 Non-functional requirements
+- Fast enough: one simulation should complete in a reasonable time on free-tier hosting.
+- Accessibility: keyboard navigable, focus styles, readable contrast.
+- Clear disclaimer: “simulation / educational.”
+
+## Should-Haves (P1) if time
+- Save/share a run (URL params for ticker + horizon).
+- Export results as JSON/CSV.
+- Basic caching of fetched data to avoid repeated downloads.
+
+## Not In MVP (explicit cuts)
+- Live trading or buy/sell recommendations.
+- User accounts / logins.
+- Large model zoo, hyperparameter tuning, or AutoML.
+- Real-time streaming prices.
+- Portfolio optimization / multi-asset allocations.
+
+## Success Metrics
+- MVP success = app is deployed, runs end-to-end, and produces stable outputs for all tickers/horizons.
+- Secondary: a recruiter can understand “what it does” within 20 seconds.
+
+## Design Vibe
+Clean, professional, techy; subtle motion; minimal clutter.

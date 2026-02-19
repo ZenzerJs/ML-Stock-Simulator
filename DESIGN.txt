@@ -1,0 +1,100 @@
+# Technical Design — ML Stock Simulator (MVP)
+
+## Stack (recommended)
+- Frontend: Next.js (App Router) + TypeScript
+- UI: Tailwind CSS
+- Charts: (choose one) Recharts or Chart.js
+- Animations: Framer Motion (subtle only)
+- Data / compute:
+  - Option A (simplest): Python pipeline executed offline, results shipped as JSON (fast UI, least infra)
+  - Option B (full app): Server-side compute route (Next.js route handler) that fetches data and runs models
+
+MVP recommendation:
+- Start with Option B only if runtime is acceptable; otherwise Option A is safer to ship.
+
+## Core Technical Decisions (locked)
+- Target variable: return % (not price).
+- History window fetched for evaluation: 10 years.
+- Internal frequency: monthly.
+- Forecast horizons: 6 months (6 steps) and 12 months (12 steps).
+
+## Data Retrieval
+- Use a single provider/library (e.g., yfinance) to fetch price history.
+- Transform to monthly series and compute returns:
+  - monthly_return_% = (close_t / close_(t-1) - 1) * 100
+
+## Model Layer (baselines + aggregator)
+Baseline models (2–3 total):
+- Keep them simple and reliable (e.g., naive baseline + 1–2 regressors/forecasters).
+- Each model must expose a common interface:
+  - fit(train_series)
+  - predict(horizon_steps) -> array[steps]
+
+Scenario Aggregator (your “model”):
+- Inputs: baseline model predictions
+- Outputs:
+  - bearish, stable, bullish series for the selected horizon
+- Implementation:
+  - Start with deterministic rule (e.g., min/median/max across models per step)
+  - Later: weighted averages based on backtest performance (v2)
+
+## Evaluation / Backtesting
+- Time-respecting walk-forward evaluation:
+  - Split series into multiple folds moving forward in time
+  - For each fold: train on past, forecast next horizon, score vs actual
+- Metrics:
+  - MAE on return %
+  - RMSE on return %
+
+## API / Execution
+If Option B (full app):
+- Route: `POST /api/simulate`
+- Request body: { ticker: string, horizonMonths: 6|12 }
+- Response:
+  - metadata: date range, n_points
+  - modelScores: [{ modelName, mae, rmse }]
+  - backtestSeries: actual + predicted (for at least best model / ensemble)
+  - scenarioForecast: bearish/stable/bullish arrays
+
+Caching:
+- Cache fetched history per ticker (in-memory or edge cache) to reduce repeat calls.
+
+## UI Pages (MVP)
+- `/` Landing: what it is, CTA to simulator
+- `/simulator` Main page:
+  - ticker select
+  - horizon select
+  - simulate button
+  - results sections (table + charts)
+
+## UI/UX constraints
+- Subtle animation only (hover, reveal).
+- “Simulate” must show loading state and handle errors gracefully.
+- Clear disclaimer in footer and near results.
+
+## Repo Structure (suggested)
+- app/
+  - page.tsx
+  - simulator/page.tsx
+  - api/simulate/route.ts
+- components/
+  - TickerSelect.tsx
+  - HorizonToggle.tsx
+  - MetricsTable.tsx
+  - ScenarioChart.tsx
+  - BacktestChart.tsx
+- lib/
+  - data.ts (fetch + transform)
+  - models/ (baseline model wrappers + aggregator)
+  - backtest.ts
+  - metrics.ts
+- public/
+  - og.png, favicon, etc.
+
+## Verification
+- Manual tests:
+  - Run simulate for every ticker (5–10) for both horizons
+  - Confirm no crashes, charts render, and disclaimer is present
+  - Confirm results are consistent across refreshes (within expected variability)
+- Basic lint/format:
+  - ESLint + Prettier

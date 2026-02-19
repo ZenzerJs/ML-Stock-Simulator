@@ -1,0 +1,52 @@
+# AGENTS.md — Master Plan (Cursor)
+
+## Project Overview
+**App:** ML Stock Simulator  
+**Goal:** A deployed market simulation app that compares baseline models on 10y monthly data and shows 6m/12m return-% forecasts with bearish/stable/bullish scenarios.  
+**Stack:** Next.js + TypeScript + Tailwind (+ chart lib) (+ Framer Motion)
+
+## How I Should Think
+1. Understand intent first; ask 1 clarifying question only if truly blocked.
+2. Plan before coding; show file tree changes before implementing.
+3. Build incrementally: one feature at a time.
+4. Verify after changes: run dev server, click through, fix regressions immediately.
+5. Keep MVP scope tight; defer extras to “Not in MVP”.
+
+## Non-Negotiables
+- No live trading, no buy/sell recommendations, clear educational disclaimer.
+- Two horizons only: 6 months and 12 months.
+- Target is return %, not price.
+- Use 10 years of history (monthly internally).
+- Scenarios must always render: bearish / stable / bullish.
+
+## Roadmap
+### Phase 1 — Foundation
+- [ ] Initialize Next.js + TS + Tailwind
+- [ ] Add `/simulator` page with basic layout
+- [ ] Add shared components + styling conventions
+
+### Phase 2 — Data + Pipeline
+- [ ] Implement history fetch + monthly transform + return % series
+- [ ] Implement baseline model wrappers (2–3)
+- [ ] Implement Scenario Aggregator (min/median/max or equivalent deterministic rule)
+- [ ] Implement walk-forward evaluation + metrics
+
+### Phase 3 — API + UI Results
+- [ ] `POST /api/simulate` returns computed results
+- [ ] Results table (MAE/RMSE)
+- [ ] Backtest chart (actual vs predicted)
+- [ ] Scenario chart (bear/stable/bull)
+- [ ] Loading + error handling + disclaimers
+
+### Phase 4 — Polish + Ship
+- [ ] Subtle animations only
+- [ ] Mobile responsiveness pass
+- [ ] Deploy to Vercel
+- [ ] Sanity test all tickers and both horizons
+
+## Verification Checklist
+- `/simulator` loads and can run a simulation
+- For each ticker: both 6m and 12m complete without errors
+- Results include model table + charts + scenario outputs
+- Disclaimer is visible and clear
+- No console errors in primary flow

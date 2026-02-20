@@ -7,6 +7,38 @@ const VALID_TICKERS = [
   "TSLA", "META", "JPM", "V", "SPY",
 ];
 
+// ── Rate limiter (in-memory, per IP) ──────────────────────────
+
+const RATE_WINDOW_MS = 60_000;
+const RATE_MAX = 5;
+
+const hits = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const timestamps = hits.get(ip) ?? [];
+  const recent = timestamps.filter((t) => now - t < RATE_WINDOW_MS);
+  if (recent.length >= RATE_MAX) {
+    hits.set(ip, recent);
+    return true;
+  }
+  recent.push(now);
+  hits.set(ip, recent);
+  return false;
+}
+
+// Periodically purge stale entries so the map doesn't grow forever
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, timestamps] of hits) {
+    const recent = timestamps.filter((t) => now - t < RATE_WINDOW_MS);
+    if (recent.length === 0) hits.delete(ip);
+    else hits.set(ip, recent);
+  }
+}, RATE_WINDOW_MS * 2);
+
+// ── Python subprocess ─────────────────────────────────────────
+
 function runPython(
   ticker: string,
   horizon: number
@@ -37,7 +69,24 @@ function runPython(
   });
 }
 
+// ── Route handler ─────────────────────────────────────────────
+
+function getClientIp(req: Request): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0].trim();
+  return "unknown";
+}
+
 export async function POST(req: Request) {
+  const ip = getClientIp(req);
+
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a minute and try again." },
+      { status: 429 }
+    );
+  }
+
   try {
     const body = await req.json();
     const { ticker, horizonMonths } = body as {
@@ -63,22 +112,20 @@ export async function POST(req: Request) {
     const result = JSON.parse(stdout);
 
     if (result.error) {
-      return NextResponse.json({ error: result.error }, { status: 500 });
+      console.error("Pipeline error:", result.error);
+      return NextResponse.json(
+        { error: "Simulation failed. Please try a different ticker or try again later." },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json(result);
   } catch (err) {
     console.error("Simulation error:", err);
-    const msg =
-      err instanceof Error ? err.message : "Internal server error";
 
-    if (msg.includes("ENOENT")) {
-      return NextResponse.json(
-        { error: "Python not found. Install Python 3 and run: pip install -r pipeline/requirements.txt" },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json(
+      { error: "Something went wrong running the simulation. Please try again." },
+      { status: 500 }
+    );
   }
 }

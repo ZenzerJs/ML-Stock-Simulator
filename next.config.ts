@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
       source: "/(.*)",
       headers: [
         { key: "X-Content-Type-Options", value: "nosniff" },
-        { key: "X-Frame-Options", value: "DENY" },
         { key: "X-XSS-Protection", value: "1; mode=block" },
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         {
@@ -19,7 +18,7 @@ const nextConfig: NextConfig = {
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: blob:",
             "connect-src 'self'",
-            "frame-ancestors 'none'",
+            "frame-ancestors https://jaydens-dev-portfolio.vercel.app https://*.vercel.app https://localhost:3000",
           ].join("; "),
         },
         {

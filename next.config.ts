@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Standalone tracing does not see runtime subprocess paths; keep Python pipeline in deploys.
+  outputFileTracingIncludes: {
+    "/api/simulate": ["./pipeline/**/*"],
+  },
   headers: async () => [
     {
       source: "/(.*)",

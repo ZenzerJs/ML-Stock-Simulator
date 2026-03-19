@@ -50,8 +50,20 @@ function runPython(
       execFile(
         cmd,
         [scriptPath, ticker, String(horizon)],
-        { timeout: 120_000, maxBuffer: 10 * 1024 * 1024 },
+        { timeout: 180_000, maxBuffer: 10 * 1024 * 1024 },
         (err, stdout, stderr) => {
+          const out = (stdout ?? "").trim();
+          if (out.startsWith("{")) {
+            try {
+              const parsed = JSON.parse(out) as { error?: string };
+              if (parsed.error != null) {
+                resolve(out);
+                return;
+              }
+            } catch {
+              /* fall through */
+            }
+          }
           if (err) {
             if (cmd === "python" && err.message?.includes("ENOENT")) {
               tryCmd("python3");
@@ -114,7 +126,12 @@ export async function POST(req: Request) {
     if (result.error) {
       console.error("Pipeline error:", result.error);
       return NextResponse.json(
-        { error: "Simulation failed. Please try a different ticker or try again later." },
+        {
+          error:
+            typeof result.error === "string"
+              ? result.error
+              : "Simulation failed. Please try a different ticker or try again later.",
+        },
         { status: 500 }
       );
     }

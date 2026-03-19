@@ -6,15 +6,27 @@ Usage:  python simulate.py <TICKER> <HORIZON_MONTHS>
 Output: JSON to stdout
 """
 
+import os
 import sys
 import json
+import time
+import random
 import warnings
+from pathlib import Path
 
 warnings.filterwarnings("ignore")
 
 import numpy as np
 import pandas as pd
 import yfinance as yf
+
+try:
+    from yfinance.exceptions import YFRateLimitError
+except ImportError:  # pragma: no cover
+    class YFRateLimitError(Exception):
+        """Fallback if older yfinance."""
+
+        pass
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.linear_model import Ridge
 from sklearn.ensemble import RandomForestRegressor
@@ -22,15 +34,95 @@ from sklearn.ensemble import RandomForestRegressor
 
 # ── Data ────────────────────────────────────────────────────────
 
-def fetch_data(ticker: str) -> pd.DataFrame:
-    df = yf.download(ticker, period="10y", interval="1mo", progress=False)
+def _normalize_yahoo_df(df: pd.DataFrame) -> pd.DataFrame:
+    if df is None or len(df) == 0:
+        return pd.DataFrame()
     if isinstance(df.columns, pd.MultiIndex):
+        df = df.copy()
         df.columns = df.columns.get_level_values(0)
     col = "Adj Close" if "Adj Close" in df.columns else "Close"
-    df = df[[col]].rename(columns={col: "close"}).dropna()
-    df["return_pct"] = df["close"].pct_change() * 100
-    df = df.dropna()
-    return df
+    if col not in df.columns:
+        return pd.DataFrame()
+    out = df[[col]].rename(columns={col: "close"}).dropna()
+    out["return_pct"] = out["close"].pct_change() * 100
+    return out.dropna()
+
+
+def _yahoo_rate_limited(err: BaseException) -> bool:
+    if isinstance(err, YFRateLimitError):
+        return True
+    msg = str(err).lower()
+    return "rate limit" in msg or "too many requests" in msg
+
+
+def _cache_dir() -> Path:
+    return Path(os.environ.get("YFIN_CACHE_DIR", "/tmp/mlsim_yfinance_cache"))
+
+
+def _cache_path(ticker: str) -> Path:
+    return _cache_dir() / f"{ticker.upper()}_10y_1mo.pkl"
+
+
+def _cache_load(ticker: str) -> pd.DataFrame | None:
+    ttl = int(os.environ.get("YFIN_CACHE_TTL_SEC", "7200"))
+    path = _cache_path(ticker)
+    try:
+        if not path.is_file():
+            return None
+        if time.time() - path.stat().st_mtime > ttl:
+            return None
+        df = pd.read_pickle(path)
+        if isinstance(df, pd.DataFrame) and len(df) >= 48:
+            return df
+    except Exception:
+        return None
+    return None
+
+
+def _cache_save(ticker: str, df: pd.DataFrame) -> None:
+    if len(df) < 48:
+        return
+    try:
+        d = _cache_dir()
+        d.mkdir(parents=True, exist_ok=True)
+        df.to_pickle(_cache_path(ticker))
+    except Exception:
+        pass
+
+
+def fetch_data(ticker: str) -> pd.DataFrame:
+    """
+    Single Yahoo request per attempt (download+history doubled rate-limit risk).
+    Back off on YFRateLimitError; cache warm instances to avoid repeat hits.
+    """
+    cached = _cache_load(ticker)
+    if cached is not None:
+        return cached
+
+    # Keep total backoff + fetch under ~150s (see API route subprocess timeout).
+    for attempt in range(5):
+        try:
+            if attempt:
+                time.sleep(random.uniform(0.5, 2.0))
+            hist = yf.Ticker(ticker).history(
+                period="10y", interval="1mo", auto_adjust=True
+            )
+            df = _normalize_yahoo_df(hist)
+            if len(df) >= 48:
+                _cache_save(ticker, df)
+                return df
+            raise RuntimeError(f"Not enough monthly bars ({len(df)})")
+        except Exception as e:
+            if _yahoo_rate_limited(e):
+                if attempt < 4:
+                    delay = min(32.0, 5.0 * (2**attempt)) + random.uniform(0, 4)
+                    time.sleep(delay)
+                    continue
+                raise RuntimeError(
+                    "Yahoo Finance is rate-limiting requests from this server. "
+                    "Wait a few minutes and try again, or run the simulator on your own machine."
+                ) from e
+            raise
 
 
 # ── Features / Targets ─────────────────────────────────────────

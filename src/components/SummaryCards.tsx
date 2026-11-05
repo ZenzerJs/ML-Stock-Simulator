@@ -24,7 +24,7 @@ export function SummaryCards({
   currentPrice,
 }: SummaryCardsProps) {
   const items = [
-    { icon: <DollarSign size={16} />, label: ticker, value: `$${currentPrice.toFixed(2)}` },
+    { icon: <DollarSign size={16} />, label: `${ticker} - latest monthly close`, value: `$${currentPrice.toFixed(2)}` },
     { icon: <Clock size={16} />, label: "Horizon", value: `${horizon} months` },
     { icon: <Calendar size={16} />, label: "Date Range", value: dateRange },
     { icon: <Hash size={16} />, label: "Data Points", value: String(dataPoints) },

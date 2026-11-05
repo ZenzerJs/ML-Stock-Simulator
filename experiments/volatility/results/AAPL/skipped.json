@@ -1,0 +1,13 @@
+[
+  {
+    "forecast_session": "2026-10-29",
+    "forecast_as_of": "2026-10-30T04:00:00+00:00",
+    "reason": "target_unavailable",
+    "train_count": 1255
+  },
+  {
+    "forecast_session": "2026-11-05",
+    "forecast_as_of": "2026-11-06T05:00:00+00:00",
+    "reason": "forecast_features_unavailable"
+  }
+]

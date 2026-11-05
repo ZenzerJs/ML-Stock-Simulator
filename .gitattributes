@@ -1,0 +1,8 @@
+pipeline/simulate.py -text whitespace=cr-at-eol
+pipeline/temporal.py -text whitespace=cr-at-eol
+experiments/leakage_audit/corrected_capture.py -text whitespace=cr-at-eol
+experiments/volatility/CONTRACT.md -text whitespace=cr-at-eol
+experiments/volatility/research.py -text whitespace=cr-at-eol
+experiments/volatility/run.py -text whitespace=cr-at-eol
+experiments/volatility/acquire.py -text whitespace=cr-at-eol
+experiments/volatility/requirements.txt -text whitespace=cr-at-eol

@@ -30,6 +30,7 @@ except ImportError:  # pragma: no cover
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.linear_model import Ridge
 from sklearn.ensemble import RandomForestRegressor
+from temporal import prepare_monthly, feature_available_at, target_available_at, utc_time
 
 
 # ── Data ────────────────────────────────────────────────────────
@@ -149,26 +150,40 @@ def build_targets(df: pd.DataFrame) -> dict:
 
 # ── Per-model scenario predictors ──────────────────────────────
 
-def arima_scenarios(train_returns, horizon):
-    """ARIMA: bearish/stable/bullish from forecast confidence intervals."""
+def arima_scenarios(train_returns, horizon, info=None):
+    """Compound marginal forecast intervals, or report a mean fallback."""
+    failures = []
     for order in [(2, 0, 2), (1, 1, 1), (1, 0, 1)]:
         try:
-            model = ARIMA(train_returns, order=order)
-            fitted = model.fit()
-            fc = fitted.get_forecast(steps=horizon)
-            mean_fc = fc.predicted_mean.values
-            ci = fc.conf_int(alpha=0.2)
-            lower = ci.iloc[:, 0].values
-            upper = ci.iloc[:, 1].values
-            bearish = float((np.prod(1 + lower / 100) - 1) * 100)
-            stable = float((np.prod(1 + mean_fc / 100) - 1) * 100)
-            bullish = float((np.prod(1 + upper / 100) - 1) * 100)
-            return bearish, stable, bullish
-        except Exception:
-            continue
+            fitted = ARIMA(train_returns, order=order).fit()
+            forecast = fitted.get_forecast(steps=horizon)
+            mean = np.asarray(forecast.predicted_mean, dtype=float).reshape(-1)
+            interval = np.asarray(forecast.conf_int(alpha=0.2), dtype=float)
+            if mean.shape != (horizon,) or interval.shape != (horizon, 2):
+                raise ValueError("Unexpected ARIMA forecast shape")
+            values = np.concatenate((mean, interval.ravel()))
+            if not np.isfinite(values).all():
+                raise ValueError("Non-finite ARIMA forecast")
+            scenarios = tuple(float((np.prod(1 + values / 100) - 1) * 100)
+                              for values in (interval[:, 0], mean, interval[:, 1]))
+            if not np.isfinite(scenarios).all():
+                raise ValueError("Non-finite compounded ARIMA forecast")
+            if info is not None:
+                convergence = getattr(fitted, "mle_retvals", {}).get("converged")
+                info.update({"status": "fit", "order": list(order), "failed_attempts": failures,
+                             "converged": bool(convergence) if convergence is not None else None})
+            return min(scenarios), scenarios[1], max(scenarios)
+        except Exception as exc:
+            failures.append({"order": list(order), "error_type": type(exc).__name__})
     m = float(np.mean(train_returns))
+    if not np.isfinite(m):
+        raise ValueError("Cannot forecast from non-finite returns")
     c = ((1 + m / 100) ** horizon - 1) * 100
-    return c * 0.5, c, c * 1.5
+    if not np.isfinite(c):
+        raise ValueError("Non-finite ARIMA fallback")
+    if info is not None:
+        info.update({"status": "fallback", "order": None, "failed_attempts": failures})
+    return tuple(sorted((c * 0.5, c, c * 1.5)))
 
 
 def ridge_scenarios(X_train, y_train, X_test, residual_std=None):
@@ -198,68 +213,117 @@ def rf_scenarios(X_train, y_train, X_test):
 
 # ── Walk-forward backtest ───────────────────────────────────────
 
+def contiguous_returns(df, tp, cutoff):
+    """Use the latest contiguous suffix, never joining periods across gaps."""
+    returns = df["return_pct"].iloc[:tp + 1].copy()
+    available = (df.available_at <= cutoff) & (df.available_at.shift(1) <= cutoff)
+    returns = returns.where(available.iloc[:tp + 1])
+    missing = np.flatnonzero(returns.isna().to_numpy())
+    start = int(missing[-1] + 1) if len(missing) else 0
+    return returns.iloc[start:].to_numpy()
+
+
 def walk_forward_backtest(df, features, targets, horizon,
-                          min_train=48, step=6):
-    prices = df["close"].values
-    returns = df["return_pct"].values
-    dates = df.index
-    feat_arr = features.values
-    tgt_arr = targets[horizon].values
-
-    valid = ~np.isnan(feat_arr).any(axis=1) & ~np.isnan(tgt_arr)
-    vi = np.where(valid)[0]
-    if len(vi) < min_train + step:
-        return None, {}
-
-    KEY = {"ARIMA": "arima", "Ridge Regression": "ridge",
-           "Random Forest": "rf"}
-
-    out = {n: {"actual_ret": [], "pred_ret": [],
-               "actual_price": [], "pred_price": [], "dates": []}
-           for n in KEY}
+                          min_train=48, step=6, evaluation_as_of=None):
+    """Evaluate fixed calendar candidates using only mature information."""
+    if horizon not in (6, 12):
+        raise ValueError("Horizon must be 6 or 12")
+    evaluation_as_of = utc_time(evaluation_as_of or pd.Timestamp.now(tz="UTC"))
+    # Rebuild on a calendar grid even when callers supply availability metadata.
+    df = prepare_monthly(df, evaluation_as_of)
+    features, targets = build_features(df), build_targets(df)
+    f_available = feature_available_at(df)
+    t_available = target_available_at(df, horizon)
+    feature_valid = features.notna().all(axis=1)
+    KEY = {"ARIMA": "arima", "Ridge Regression": "ridge", "Random Forest": "rf"}
+    out = {n: {"actual_ret": [], "pred_ret": [], "actual_price": [],
+               "pred_price": [], "dates": [], "raw": []} for n in KEY}
     residuals = {n: [] for n in KEY}
-
-    for i in range(min_train, len(vi), step):
-        tp = vi[i]
-        if tp + horizon >= len(prices):
-            break
-        actual_ret = float(tgt_arr[tp])
-        actual_price = float(prices[tp + horizon])
-        base = float(prices[tp])
-        tgt_idx = tp + horizon
-        date_str = (str(dates[tgt_idx].date())[:7]
-                    if tgt_idx < len(dates) else "?")
-
-        # ARIMA — use stable (mean) prediction for single-point backtest
-        _, ar_ret, _ = arima_scenarios(returns[:tp + 1], horizon)
-
-        X_tr = feat_arr[vi[:i]]
-        y_tr = tgt_arr[vi[:i]]
-        X_te = feat_arr[tp]
-
-        ridge_m = Ridge(alpha=1.0)
-        ridge_m.fit(X_tr, y_tr)
-        ri_ret = float(ridge_m.predict(X_te.reshape(1, -1))[0])
-
-        rf_m = RandomForestRegressor(n_estimators=100, random_state=42,
-                                     n_jobs=-1)
-        rf_m.fit(X_tr, y_tr)
-        rf_ret = float(rf_m.predict(X_te.reshape(1, -1))[0])
-
-        for name, pred_ret in [("ARIMA", ar_ret),
-                               ("Ridge Regression", ri_ret),
-                               ("Random Forest", rf_ret)]:
+    audit = []
+    # Anchor to the original twelve-feature warmup on the calendar grid,
+    # independent of future validity or observed target completeness.
+    for tp in range(12 + min_train, len(df), step):
+        cutoff = df.available_at.iloc[tp]
+        row = {"horizon": horizon, "forecast_bar": str(df.index[tp].date()),
+               "forecast_as_of": cutoff.isoformat(), "status": "skipped"}
+        audit.append(row)
+        if cutoff > evaluation_as_of or pd.isna(df.close.iloc[tp]):
+            row["reason"] = "forecast bar unavailable"; continue
+        if not feature_valid.iloc[tp] or pd.isna(f_available.iloc[tp]) or f_available.iloc[tp] > cutoff:
+            row["reason"] = "forecast features unavailable"; continue
+        endpoint = tp + horizon
+        if endpoint < len(df) and pd.notna(t_available.iloc[tp]) and t_available.iloc[tp] <= cutoff:
+            row["reason"] = "target already available at forecast cutoff"; continue
+        mask = (feature_valid & targets[horizon].notna() & (f_available <= cutoff)
+                & (t_available <= cutoff) & (df.index < df.index[tp]))
+        indices = np.flatnonzero(mask.to_numpy())
+        row["supervised_train_count"] = len(indices)
+        if len(indices) < min_train:
+            row["reason"] = "insufficient mature training labels"; continue
+        if endpoint >= len(df) or pd.isna(targets[horizon].iloc[tp]) or t_available.iloc[tp] > evaluation_as_of:
+            row["reason"] = "evaluation target unavailable"; continue
+        observed_returns = contiguous_returns(df, tp, cutoff)
+        if not len(observed_returns):
+            row["reason"] = "no available returns"; continue
+        row.update({"status": "evaluated", "target_bar": str(df.index[endpoint].date()),
+                    "target_available_at": t_available.iloc[tp].isoformat(),
+                    "latest_feature_available_at": f_available.iloc[tp].isoformat(),
+                    "latest_training_feature_available_at": f_available.iloc[indices].max().isoformat(),
+                    "latest_training_label_available_at": t_available.iloc[indices].max().isoformat(),
+                    "arima_return_count": len(observed_returns)})
+        actual = float(targets[horizon].iloc[tp]); base = float(df.close.iloc[tp]); price = float(df.close.iloc[endpoint])
+        arima_info = {}
+        _, ar_ret, _ = arima_scenarios(observed_returns, horizon, arima_info)
+        row["arima"] = arima_info
+        X_tr, y_tr, X_te = features.iloc[indices].to_numpy(), targets[horizon].iloc[indices].to_numpy(), features.iloc[tp].to_numpy()
+        ridge_m = Ridge(alpha=1.0).fit(X_tr, y_tr)
+        rf_m = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1).fit(X_tr, y_tr)
+        for name, pred in (("ARIMA", ar_ret), ("Ridge Regression", float(ridge_m.predict(X_te.reshape(1, -1))[0])),
+                           ("Random Forest", float(rf_m.predict(X_te.reshape(1, -1))[0]))):
             m = out[name]
-            m["actual_ret"].append(round(actual_ret, 2))
-            m["pred_ret"].append(round(pred_ret, 2))
-            m["actual_price"].append(round(actual_price, 2))
-            m["pred_price"].append(round(base * (1 + pred_ret / 100), 2))
-            m["dates"].append(date_str)
-            residuals[name].append(actual_ret - pred_ret)
+            m["actual_ret"].append(round(actual, 2)); m["pred_ret"].append(round(pred, 2))
+            m["actual_price"].append(round(price, 2)); m["pred_price"].append(round(base * (1 + pred / 100), 2))
+            m["dates"].append(str(df.index[endpoint].date())[:7])
+            m["raw"].append({**row, "model": name, "train_count": len(observed_returns) if name == "ARIMA" else len(indices),
+                             "actual_return": actual, "prediction": pred, "error_actual_minus_prediction": actual - pred})
+            residuals[name].append(actual - pred)
+    res_std = {n: float(np.std(r)) if len(r) > 1 else 0.0 for n, r in residuals.items()}
+    return out, res_std, audit
 
-    res_std = {n: float(np.std(r)) if len(r) > 1 else 0.0
-               for n, r in residuals.items()}
-    return out, res_std
+
+def final_scenarios(df, features, targets, horizon, as_of, residual_std=None, min_train=48):
+    """Fit final scenarios at the latest available bar, without stale features."""
+    as_of = utc_time(as_of)
+    available = df.close.notna() & (df.available_at <= as_of)
+    positions = np.flatnonzero(available.to_numpy())
+    if not len(positions):
+        raise ValueError("No completed monthly bars are available")
+    tp = positions[-1]; cutoff = as_of
+    target_boundary = (df.index[tp] + pd.DateOffset(months=horizon + 1)).tz_localize("America/New_York").tz_convert("UTC")
+    if target_boundary <= cutoff:
+        raise ValueError("Latest completed bar is too stale for a prospective forecast")
+    f_avail = feature_available_at(df); t_avail = target_available_at(df, horizon)
+    valid = features.notna().all(axis=1)
+    if not valid.iloc[tp] or pd.isna(f_avail.iloc[tp]) or f_avail.iloc[tp] > cutoff:
+        raise ValueError("Latest completed bar lacks available features; cannot generate scenarios")
+    eligible = valid & targets[horizon].notna() & (f_avail <= cutoff) & (t_avail <= cutoff) & (df.index < df.index[tp])
+    indices = np.flatnonzero(eligible.to_numpy())
+    if len(indices) < min_train:
+        raise ValueError(f"Insufficient mature {horizon}-month training labels: {len(indices)}; need {min_train}")
+    returns = contiguous_returns(df, tp, cutoff)
+    if not len(returns):
+        raise ValueError("No contiguous available monthly returns for ARIMA")
+    X, y, x = features.iloc[indices].to_numpy(), targets[horizon].iloc[indices].to_numpy(), features.iloc[tp].to_numpy()
+    arima_info = {}
+    scenarios = {"ARIMA": arima_scenarios(returns, horizon, arima_info),
+                 "Ridge Regression": ridge_scenarios(X, y, x, residual_std),
+                 "Random Forest": rf_scenarios(X, y, x)}
+    audit = {"horizon": horizon, "forecast_bar": str(df.index[tp].date()), "forecast_as_of": as_of.isoformat(),
+             "latest_feature_available_at": f_avail.iloc[tp].isoformat(),
+             "latest_training_feature_available_at": f_avail.iloc[indices].max().isoformat(),
+             "latest_training_label_available_at": t_avail.iloc[indices].max().isoformat(),
+             "supervised_train_count": len(indices), "arima_return_count": len(returns), "arima": arima_info}
+    return scenarios, audit, tp
 
 
 def compute_metrics(bt):
@@ -336,8 +400,9 @@ def main():
         sys.exit(1)
 
     try:
-        df = fetch_data(ticker)
-        if len(df) < 48:
+        as_of = pd.Timestamp.now(tz="UTC")
+        df = prepare_monthly(fetch_data(ticker), as_of)
+        if df.close.notna().sum() < 48:
             json.dump({"error": f"Not enough data ({len(df)} months)"},
                       sys.stdout)
             sys.exit(1)
@@ -347,14 +412,17 @@ def main():
         prices = df["close"].values
         returns = df["return_pct"].values
         dates = df.index
-        current_price = float(prices[-1])
+        completed = np.flatnonzero(df.close.notna().to_numpy())
+        if not len(completed):
+            raise ValueError("No completed monthly bars available")
+        current_price = float(prices[completed[-1]])
         feat_arr = features.values
 
         KEY = {"ARIMA": "arima", "Ridge Regression": "ridge",
                "Random Forest": "rf"}
 
         # ── Backtest (also collects residual std for Ridge) ────
-        bt, res_std = walk_forward_backtest(df, features, targets, sel_h)
+        bt, res_std, backtest_audit = walk_forward_backtest(df, features, targets, sel_h, evaluation_as_of=as_of)
         model_scores = compute_metrics(bt) if bt else []
 
         bt_series = []
@@ -369,26 +437,15 @@ def main():
 
         # ── Per-model scenarios at both horizons ───────────────
         model_forecasts = []
+        final_audits = {}
 
         for h in [6, 12]:
-            tgt = targets[h].values
-            ok = ~np.isnan(feat_arr).any(axis=1) & ~np.isnan(tgt)
-            vi = np.where(ok)[0]
-            X_all, y_all = feat_arr[vi], tgt[vi]
-
-            last_feat = feat_arr[-1]
-            if np.isnan(last_feat).any():
-                last_feat = feat_arr[vi[-1]]
-
-            # ARIMA
-            ar_scen = arima_scenarios(returns, h)
-
-            # Ridge (use residual_std from backtest for the selected horizon)
-            ri_scen = ridge_scenarios(X_all, y_all, last_feat,
-                                     res_std.get("Ridge Regression", None))
-
-            # Random Forest
-            rf_scen = rf_scenarios(X_all, y_all, last_feat)
+            scenarios, final_audit, _ = final_scenarios(df, features, targets, h, as_of,
+                res_std.get("Ridge Regression") if h == sel_h else None)
+            ri_scen = scenarios["Ridge Regression"]
+            ar_scen = scenarios["ARIMA"]
+            rf_scen = scenarios["Random Forest"]
+            final_audits[str(h)] = final_audit
 
             if h == 6:
                 scen_6 = {"ARIMA": ar_scen, "Ridge Regression": ri_scen,
@@ -428,7 +485,7 @@ def main():
 
         # ── Historical prices for chart (last 18 months) ──────
         hist_count = min(18, len(df))
-        hist_slice = df.tail(hist_count)
+        hist_slice = df[df.close.notna()].tail(hist_count)
         hist_prices = []
         for dt, row in hist_slice.iterrows():
             hist_prices.append({
@@ -438,7 +495,7 @@ def main():
 
         # ── Price stats ────────────────────────────────────────
         rc = min(26 if sel_h <= 6 else 12, len(df))
-        recent = df.tail(rc)
+        recent = df[df.close.notna()].tail(rc)
         pstats = []
         prev = None
         for dt, row in recent.iterrows():
@@ -459,10 +516,12 @@ def main():
             "metadata": {
                 "ticker": ticker,
                 "currentPrice": round(current_price, 2),
-                "dateRange": (f"{str(dates[0].date())[:7]} to "
-                              f"{str(dates[-1].date())[:7]}"),
-                "nPoints": len(df),
+                "dateRange": (f"{str(df.index[completed[0]].date())[:7]} to "
+                              f"{str(df.index[completed[-1]].date())[:7]}"),
+                "nPoints": len(completed),
+                "priceAsOf": df.available_at.iloc[completed[-1]].isoformat(),
             },
+            "temporalAudit": {"backtest": backtest_audit, "final": final_audits},
             "modelForecasts": model_forecasts,
             "modelScores": model_scores,
             "backtestSeries": bt_series,

@@ -1,0 +1,370 @@
+{
+  "ticker": "SPY",
+  "acquisition": {
+    "ticker": "SPY",
+    "request": "history(period=10y, interval=1d, auto_adjust=True)",
+    "started_utc": "2026-11-05T21:00:43.522197+00:00",
+    "acquired_utc": "2026-11-05T21:00:46.817511+00:00",
+    "rows": 2513,
+    "first_session": "2016-11-07",
+    "last_session": "2026-11-05",
+    "sha256": "80039e82b365aa0cd8a904a2ad625d78575e6d7a72b655d26f77bf77909227bc",
+    "yfinance": "1.2.0"
+  },
+  "evaluation_as_of_utc": "2026-11-05T21:00:46.817511+00:00",
+  "run_started_utc": "2026-11-05T21:06:55.427177+00:00",
+  "run_completed_utc": "2026-11-05T21:08:11.613007+00:00",
+  "calendar": "XNYS",
+  "session_count": 2513,
+  "calendar_missing_or_unavailable_close_count": 1,
+  "candidate_skips": 2,
+  "evaluated_folds": 345,
+  "all_models_common_dates": 345,
+  "source_sha256": {
+    "CONTRACT.md": "c4a3376be3cc306792e623558a7d245941327be3bb2d29477fa827047dc55962",
+    "research.py": "3afb199d4d4c52e411370786596ff9555c22c2b0785d6678b8ce38d16893cb05",
+    "run.py": "85b1ffc4672d930e61d4dcb586a3cde993430bcac5764a48f5d163249e583c33",
+    "acquire.py": "4df14a4ad3ff26bb3dbf243eecb54ffcf2f8020c7dab8a8283937c4e1c12143e",
+    "requirements.txt": "577e48115ba360a58f38dc00833d51bc1c7c426209171d6d3beceec5e1bea86e"
+  },
+  "python": "3.14.3",
+  "versions": {
+    "numpy": "2.4.2",
+    "pandas": "3.0.1",
+    "scipy": "1.17.0",
+    "scikit-learn": "1.8.0",
+    "arch": "8.0.0",
+    "exchange_calendars": "4.13.2",
+    "yfinance": "1.2.0",
+    "pyluach": "2.3.0",
+    "toolz": "1.2.0",
+    "korean_lunar_calendar": "0.4.0",
+    "tzdata": "2025.3"
+  },
+  "config": {
+    "horizon_sessions": 5,
+    "min_train_mature": 756,
+    "window_sessions": 1260,
+    "step_sessions": 5,
+    "rf_trees": 100,
+    "rf_seed": 42,
+    "ridge_alpha": 1.0,
+    "ewma_lambda": 0.94,
+    "qlike_floor": 1e-12,
+    "high_recent_variance_threshold": 0.0004
+  },
+  "metrics": {
+    "persistence5": {
+      "status_counts": {
+        "ok": 345
+      },
+      "model_specific": {
+        "count": 345,
+        "mae": 0.0001331762907718892,
+        "rmse": 0.0004807819427911074,
+        "qlike": -7.7054479262765545,
+        "prediction_floor_count": 0,
+        "target_floor_count": 0
+      },
+      "all_models_common": {
+        "count": 345,
+        "mae": 0.0001331762907718892,
+        "rmse": 0.0004807819427911074,
+        "qlike": -7.7054479262765545,
+        "prediction_floor_count": 0,
+        "target_floor_count": 0
+      },
+      "common_by_regime": {
+        "typical_recent_variance": {
+          "count": 330,
+          "mae": 8.427893744185286e-05,
+          "rmse": 0.00019855248592909281,
+          "qlike": -7.766053254139944,
+          "prediction_floor_count": 0,
+          "target_floor_count": 0
+        },
+        "high_recent_variance": {
+          "count": 15,
+          "mae": 0.001208918064032689,
+          "rmse": 0.0021093059017392693,
+          "qlike": -6.372130713281972,
+          "prediction_floor_count": 0,
+          "target_floor_count": 0
+        }
+      }
+    },
+    "rolling21": {
+      "status_counts": {
+        "ok": 345
+      },
+      "model_specific": {
+        "count": 345,
+        "mae": 0.0001309357023720069,
+        "rmse": 0.0004637075911773532,
+        "qlike": -8.080063572894863,
+        "prediction_floor_count": 0,
+        "target_floor_count": 0
+      },
+      "all_models_common": {
+        "count": 345,
+        "mae": 0.0001309357023720069,
+        "rmse": 0.0004637075911773532,
+        "qlike": -8.080063572894863,
+        "prediction_floor_count": 0,
+        "target_floor_count": 0
+      },
+      "common_by_regime": {
+        "typical_recent_variance": {
+          "count": 330,
+          "mae": 7.844345227926564e-05,
+          "rmse": 0.00021753388313807637,
+          "qlike": -8.182599508959497,
+          "prediction_floor_count": 0,
+          "target_floor_count": 0
+        },
+        "high_recent_variance": {
+          "count": 15,
+          "mae": 0.0012857652044123142,
+          "rmse": 0.001975982541868149,
+          "qlike": -5.824272979472956,
+          "prediction_floor_count": 0,
+          "target_floor_count": 0
+        }
+      }
+    },
+    "ewma094": {
+      "status_counts": {
+        "ok": 345
+      },
+      "model_specific": {
+        "count": 345,
+        "mae": 0.0001281072527745421,
+        "rmse": 0.00043336268463916867,
+        "qlike": -8.12503286123342,
+        "prediction_floor_count": 0,
+        "target_floor_count": 0
+      },
+      "all_models_common": {
+        "count": 345,
+        "mae": 0.0001281072527745421,
+        "rmse": 0.00043336268463916867,
+        "qlike": -8.12503286123342,
+        "prediction_floor_count": 0,
+        "target_floor_count": 0
+      },
+      "common_by_regime": {
+        "typical_recent_variance": {
+          "count": 330,
+          "mae": 8.368284914969075e-05,
+          "rmse": 0.00022060042029164428,
+          "qlike": -8.224750684287532,
+          "prediction_floor_count": 0,
+          "target_floor_count": 0
+        },
+        "high_recent_variance": {
+          "count": 15,
+          "mae": 0.0011054441325212714,
+          "rmse": 0.0018024577605435452,
+          "qlike": -5.931240754042927,
+          "prediction_floor_count": 0,
+          "target_floor_count": 0
+        }
+      }
+    },
+    "garch11": {
+      "status_counts": {
+        "ok": 345
+      },
+      "model_specific": {
+        "count": 345,
+        "mae": 0.00012110644849764217,
+        "rmse": 0.000438948663785749,
+        "qlike": -8.182638263653049,
+        "prediction_floor_count": 0,
+        "target_floor_count": 0
+      },
+      "all_models_common": {
+        "count": 345,
+        "mae": 0.00012110644849764217,
+        "rmse": 0.000438948663785749,
+        "qlike": -8.182638263653049,
+        "prediction_floor_count": 0,
+        "target_floor_count": 0
+      },
+      "common_by_regime": {
+        "typical_recent_variance": {
+          "count": 330,
+          "mae": 8.000495304799915e-05,
+          "rmse": 0.000206705189606354,
+          "qlike": -8.266153804688537,
+          "prediction_floor_count": 0,
+          "target_floor_count": 0
+        },
+        "high_recent_variance": {
+          "count": 15,
+          "mae": 0.0010253393483897883,
+          "rmse": 0.0018685693987859808,
+          "qlike": -6.345296360872274,
+          "prediction_floor_count": 0,
+          "target_floor_count": 0
+        }
+      }
+    },
+    "har_ols": {
+      "status_counts": {
+        "ok": 345
+      },
+      "model_specific": {
+        "count": 345,
+        "mae": 0.00014872727804803964,
+        "rmse": 0.0007839264861529004,
+        "qlike": -8.1535602380348,
+        "prediction_floor_count": 0,
+        "target_floor_count": 0
+      },
+      "all_models_common": {
+        "count": 345,
+        "mae": 0.00014872727804803964,
+        "rmse": 0.0007839264861529004,
+        "qlike": -8.1535602380348,
+        "prediction_floor_count": 0,
+        "target_floor_count": 0
+      },
+      "common_by_regime": {
+        "typical_recent_variance": {
+          "count": 330,
+          "mae": 8.668788736701127e-05,
+          "rmse": 0.0002165282568851429,
+          "qlike": -8.235635406980228,
+          "prediction_floor_count": 0,
+          "target_floor_count": 0
+        },
+        "high_recent_variance": {
+          "count": 15,
+          "mae": 0.0015135938730306642,
+          "rmse": 0.0036198036173614397,
+          "qlike": -6.347906521235345,
+          "prediction_floor_count": 0,
+          "target_floor_count": 0
+        }
+      }
+    },
+    "ridge": {
+      "status_counts": {
+        "ok": 345
+      },
+      "model_specific": {
+        "count": 345,
+        "mae": 0.00014878861429689575,
+        "rmse": 0.0007833428783637445,
+        "qlike": -8.153612715420513,
+        "prediction_floor_count": 0,
+        "target_floor_count": 0
+      },
+      "all_models_common": {
+        "count": 345,
+        "mae": 0.00014878861429689575,
+        "rmse": 0.0007833428783637445,
+        "qlike": -8.153612715420513,
+        "prediction_floor_count": 0,
+        "target_floor_count": 0
+      },
+      "common_by_regime": {
+        "typical_recent_variance": {
+          "count": 330,
+          "mae": 8.668101156224462e-05,
+          "rmse": 0.00021651529673359776,
+          "qlike": -8.23568876107406,
+          "prediction_floor_count": 0,
+          "target_floor_count": 0
+        },
+        "high_recent_variance": {
+          "count": 15,
+          "mae": 0.0015151558744592212,
+          "rmse": 0.0036169136394281634,
+          "qlike": -6.3479397110425095,
+          "prediction_floor_count": 0,
+          "target_floor_count": 0
+        }
+      }
+    },
+    "random_forest": {
+      "status_counts": {
+        "ok": 345
+      },
+      "model_specific": {
+        "count": 345,
+        "mae": 0.00013384047150136863,
+        "rmse": 0.0004698038555158423,
+        "qlike": -8.095673867219041,
+        "prediction_floor_count": 0,
+        "target_floor_count": 0
+      },
+      "all_models_common": {
+        "count": 345,
+        "mae": 0.00013384047150136863,
+        "rmse": 0.0004698038555158423,
+        "qlike": -8.095673867219041,
+        "prediction_floor_count": 0,
+        "target_floor_count": 0
+      },
+      "common_by_regime": {
+        "typical_recent_variance": {
+          "count": 330,
+          "mae": 9.020728633170952e-05,
+          "rmse": 0.0002226459795121641,
+          "qlike": -8.17376062160862,
+          "prediction_floor_count": 0,
+          "target_floor_count": 0
+        },
+        "high_recent_variance": {
+          "count": 15,
+          "mae": 0.001093770545233869,
+          "rmse": 0.001996470168291822,
+          "qlike": -6.377765270648308,
+          "prediction_floor_count": 0,
+          "target_floor_count": 0
+        }
+      }
+    },
+    "ridge_extended": {
+      "status_counts": {
+        "ok": 345
+      },
+      "model_specific": {
+        "count": 345,
+        "mae": 0.00015683433993261278,
+        "rmse": 0.0008431204773176929,
+        "qlike": 7911094.068501298,
+        "prediction_floor_count": 14,
+        "target_floor_count": 0
+      },
+      "all_models_common": {
+        "count": 345,
+        "mae": 0.00015683433993261278,
+        "rmse": 0.0008431204773176929,
+        "qlike": 7911094.068501298,
+        "prediction_floor_count": 14,
+        "target_floor_count": 0
+      },
+      "common_by_regime": {
+        "typical_recent_variance": {
+          "count": 330,
+          "mae": 8.816141648606635e-05,
+          "rmse": 0.00022128570472767375,
+          "qlike": 5304725.9796030605,
+          "prediction_floor_count": 11,
+          "target_floor_count": 0
+        },
+        "high_recent_variance": {
+          "count": 15,
+          "mae": 0.0016676386557566351,
+          "rmse": 0.003907981219849376,
+          "qlike": 65251192.02426257,
+          "prediction_floor_count": 3,
+          "target_floor_count": 0
+        }
+      }
+    }
+  }
+}

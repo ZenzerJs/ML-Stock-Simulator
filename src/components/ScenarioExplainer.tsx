@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Info } from "lucide-react";
 
-export function ScenarioExplainer() {
+export function ScenarioExplainer({ arimaFallback }: { arimaFallback: boolean }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -23,18 +23,21 @@ export function ScenarioExplainer() {
           <strong className="text-destructive">bearish</strong> /{" "}
           <strong className="text-primary">stable</strong> /{" "}
           <strong className="text-success">bullish</strong> price forecast
-          using its native uncertainty estimation:
+          using illustrative scenario spreads:
         </p>
+        {arimaFallback && (
+          <p>Some ARIMA fits fell back to a historical-mean estimate because all fit attempts failed.</p>
+        )}
         <ul className="ml-4 list-disc space-y-1.5">
           <li>
             <strong className="text-[#06b6d4]">ARIMA</strong> —
-            forecasts monthly returns with 80% confidence intervals.
-            Lower bound compounds to bearish, mean to stable, upper to bullish.
+            compounds marginal monthly forecast bounds and the mean into scenario paths.
+            These bounds do not establish coverage for the full horizon.
           </li>
           <li>
             <strong className="text-[#f59e0b]">Ridge Regression</strong> —
             point prediction +/- 1.28&times; the residual standard deviation
-            from the walk-forward backtest (roughly 80% coverage).
+            from the walk-forward backtest when available and nonzero. Otherwise, a fallback spread uses the prediction magnitude with a minimum of 2 percentage points. Both are heuristics.
           </li>
           <li>
             <strong className="text-[#ec4899]">Random Forest</strong> —
@@ -46,7 +49,7 @@ export function ScenarioExplainer() {
         <p>
           Select a model tab on the chart to see that model&apos;s view of
           the market. Each scenario is converted from predicted return % to
-          dollar price using the current stock price.
+          dollar price using the latest completed monthly close. These spreads are not calibrated probabilities.
         </p>
       </div>
     </motion.div>

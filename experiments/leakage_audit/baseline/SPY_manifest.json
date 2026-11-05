@@ -1,0 +1,104 @@
+{
+  "ticker": "SPY",
+  "source_commit": "3b4030eda5acb80528bfe43d5897fc299bc30122",
+  "snapshot_sha256": "f4912e14562caa41cfeef5ce3caeb28ef6db4da1dc93f2978c44cfb9cbb96c53",
+  "snapshot_rows": 119,
+  "first": "2017-01-01 00:00:00-05:00",
+  "last": "2026-11-01 00:00:00-04:00",
+  "python": "3.14.3",
+  "versions": {
+    "numpy": "2.4.2",
+    "pandas": "3.0.1",
+    "yfinance": "1.2.0",
+    "statsmodels": "0.14.6",
+    "scikit-learn": "1.8.0"
+  },
+  "settings": {
+    "min_train": 48,
+    "step": 6,
+    "ridge_alpha": 1.0,
+    "rf_trees": 100,
+    "rf_seed": 42,
+    "arima_orders": [
+      [
+        2,
+        0,
+        2
+      ],
+      [
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        0,
+        1
+      ]
+    ]
+  },
+  "horizons": {
+    "6": {
+      "folds": 9,
+      "original_reported_metrics_on_rounded_returns": [
+        {
+          "modelName": "ARIMA",
+          "mae": 5.21,
+          "rmse": 7.07
+        },
+        {
+          "modelName": "Ridge Regression",
+          "mae": 5.96,
+          "rmse": 6.89
+        },
+        {
+          "modelName": "Random Forest",
+          "mae": 5.88,
+          "rmse": 6.47
+        }
+      ],
+      "raw_predictions": "SPY_6m.csv",
+      "residual_std_unrounded": {
+        "ARIMA": 7.016678913962996,
+        "Ridge Regression": 6.863693855110765,
+        "Random Forest": 6.4733184432850726
+      }
+    },
+    "12": {
+      "folds": 8,
+      "original_reported_metrics_on_rounded_returns": [
+        {
+          "modelName": "ARIMA",
+          "mae": 7.12,
+          "rmse": 10.79
+        },
+        {
+          "modelName": "Ridge Regression",
+          "mae": 12.74,
+          "rmse": 14.87
+        },
+        {
+          "modelName": "Random Forest",
+          "mae": 7.86,
+          "rmse": 8.63
+        }
+      ],
+      "raw_predictions": "SPY_12m.csv",
+      "residual_std_unrounded": {
+        "ARIMA": 10.787015520207133,
+        "Ridge Regression": 14.868381557545437,
+        "Random Forest": 8.260113738766563
+      }
+    }
+  },
+  "acquisition_local_time_window": "2026-11-05 15:36\u201315:37 America/New_York (approximate)",
+  "snapshot_file_mtime_ns": 1793911018331220400,
+  "missing_calendar_months": [],
+  "last_bar_partial_at_acquisition": true,
+  "arima_behavior": "All captured folds match historical mean fallback; forecast extraction fails on ndarray outputs.",
+  "joblib_backend": "sequential (sandbox limitation)",
+  "source_file_sha256_git_blob_bytes": "aaa24490da11d8bfd24bf463bc48c1b7bbb529fd73750bd68adfccaa4c5a5b92",
+  "acquisition_utc_approximate": "2026-11-05 20:36\u201320:37 UTC; exact time not recorded",
+  "run_utc_approximate": "2026-11-05 20:36\u201320:37 UTC; exact time not recorded",
+  "snapshot_as_of": "2026-11-05 during acquisition; November bar partial"
+}

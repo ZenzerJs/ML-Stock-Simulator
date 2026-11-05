@@ -25,10 +25,10 @@ export function PriceStats({ stats, horizon }: PriceStatsProps) {
   const displayCount = expanded ? stats.length : Math.min(6, stats.length);
   const displayed = stats.slice(-displayCount).reverse();
 
-  const avgChange =
-    stats.reduce((s, p) => s + p.changePct, 0) / (stats.length || 1);
-  const maxHigh = Math.max(...stats.map((s) => s.high));
-  const minLow = Math.min(...stats.map((s) => s.low));
+  const comparisons = stats.slice(1);
+  const avgChange = comparisons.reduce((s, p) => s + p.changePct, 0) / (comparisons.length || 1);
+  const maxHigh = Math.max(...stats.map((s) => s.close));
+  const minLow = Math.min(...stats.map((s) => s.close));
 
   return (
     <motion.div
@@ -44,7 +44,7 @@ export function PriceStats({ stats, horizon }: PriceStatsProps) {
         <div className="flex-1">
           <h3 className="text-sm font-semibold text-foreground sm:text-base">{periodLabel} Price History</h3>
           <p className="text-[11px] text-muted-foreground sm:text-xs">
-            Recent {stats.length} periods — open, close, high, low, change
+            Recent {stats.length} displayed monthly closes. Changes compare the prior displayed close; the first row references itself and is excluded from the average.
           </p>
         </div>
       </div>
@@ -66,7 +66,7 @@ export function PriceStats({ stats, horizon }: PriceStatsProps) {
         </div>
         <div className="bg-background px-3 py-2.5 text-center sm:px-4 sm:py-3">
           <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground sm:text-[11px]">
-            Period High
+            Highest Close
           </div>
           <div className="mt-1 text-sm font-bold text-foreground">
             ${maxHigh.toFixed(2)}
@@ -74,7 +74,7 @@ export function PriceStats({ stats, horizon }: PriceStatsProps) {
         </div>
         <div className="bg-background px-3 py-2.5 text-center sm:px-4 sm:py-3">
           <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground sm:text-[11px]">
-            Period Low
+            Lowest Close
           </div>
           <div className="mt-1 text-sm font-bold text-foreground">
             ${minLow.toFixed(2)}
@@ -88,10 +88,8 @@ export function PriceStats({ stats, horizon }: PriceStatsProps) {
           <thead>
             <tr className="border-b border-white/[0.04] text-muted-foreground">
               <th className="px-4 py-3 text-left text-xs font-medium">Period</th>
-              <th className="px-3 py-3 text-right text-xs font-medium">Open</th>
+              <th className="px-3 py-3 text-right text-xs font-medium">Previous Close</th>
               <th className="px-3 py-3 text-right text-xs font-medium">Close</th>
-              <th className="px-3 py-3 text-right text-xs font-medium">High</th>
-              <th className="px-3 py-3 text-right text-xs font-medium">Low</th>
               <th className="px-4 py-3 text-right text-xs font-medium">Change</th>
             </tr>
           </thead>
@@ -116,12 +114,6 @@ export function PriceStats({ stats, horizon }: PriceStatsProps) {
                     </td>
                     <td className="px-3 py-3 text-right font-mono text-foreground">
                       ${stat.close.toFixed(2)}
-                    </td>
-                    <td className="px-3 py-3 text-right font-mono text-muted-foreground">
-                      ${stat.high.toFixed(2)}
-                    </td>
-                    <td className="px-3 py-3 text-right font-mono text-muted-foreground">
-                      ${stat.low.toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">

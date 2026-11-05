@@ -1,0 +1,202 @@
+[
+  {
+    "horizon": 6,
+    "forecast_bar": "2022-01-01",
+    "forecast_as_of": "2022-02-01T05:00:00+00:00",
+    "status": "skipped",
+    "supervised_train_count": 42,
+    "reason": "insufficient mature training labels"
+  },
+  {
+    "horizon": 6,
+    "forecast_bar": "2022-07-01",
+    "forecast_as_of": "2022-08-01T04:00:00+00:00",
+    "status": "evaluated",
+    "supervised_train_count": 48,
+    "target_bar": "2023-01-01",
+    "target_available_at": "2023-02-01T05:00:00+00:00",
+    "latest_feature_available_at": "2022-07-01T04:00:00+00:00",
+    "latest_training_feature_available_at": "2022-01-01T05:00:00+00:00",
+    "latest_training_label_available_at": "2022-08-01T04:00:00+00:00",
+    "arima_return_count": 66,
+    "arima": {
+      "status": "fit",
+      "order": [
+        2,
+        0,
+        2
+      ],
+      "failed_attempts": [],
+      "converged": true
+    }
+  },
+  {
+    "horizon": 6,
+    "forecast_bar": "2023-01-01",
+    "forecast_as_of": "2023-02-01T05:00:00+00:00",
+    "status": "evaluated",
+    "supervised_train_count": 54,
+    "target_bar": "2023-07-01",
+    "target_available_at": "2023-08-01T04:00:00+00:00",
+    "latest_feature_available_at": "2023-01-01T05:00:00+00:00",
+    "latest_training_feature_available_at": "2022-07-01T04:00:00+00:00",
+    "latest_training_label_available_at": "2023-02-01T05:00:00+00:00",
+    "arima_return_count": 72,
+    "arima": {
+      "status": "fit",
+      "order": [
+        2,
+        0,
+        2
+      ],
+      "failed_attempts": [],
+      "converged": true
+    }
+  },
+  {
+    "horizon": 6,
+    "forecast_bar": "2023-07-01",
+    "forecast_as_of": "2023-08-01T04:00:00+00:00",
+    "status": "evaluated",
+    "supervised_train_count": 60,
+    "target_bar": "2024-01-01",
+    "target_available_at": "2024-02-01T05:00:00+00:00",
+    "latest_feature_available_at": "2023-07-01T04:00:00+00:00",
+    "latest_training_feature_available_at": "2023-01-01T05:00:00+00:00",
+    "latest_training_label_available_at": "2023-08-01T04:00:00+00:00",
+    "arima_return_count": 78,
+    "arima": {
+      "status": "fit",
+      "order": [
+        2,
+        0,
+        2
+      ],
+      "failed_attempts": [],
+      "converged": true
+    }
+  },
+  {
+    "horizon": 6,
+    "forecast_bar": "2024-01-01",
+    "forecast_as_of": "2024-02-01T05:00:00+00:00",
+    "status": "evaluated",
+    "supervised_train_count": 66,
+    "target_bar": "2024-07-01",
+    "target_available_at": "2024-08-01T04:00:00+00:00",
+    "latest_feature_available_at": "2024-01-01T05:00:00+00:00",
+    "latest_training_feature_available_at": "2023-07-01T04:00:00+00:00",
+    "latest_training_label_available_at": "2024-02-01T05:00:00+00:00",
+    "arima_return_count": 84,
+    "arima": {
+      "status": "fit",
+      "order": [
+        2,
+        0,
+        2
+      ],
+      "failed_attempts": [],
+      "converged": true
+    }
+  },
+  {
+    "horizon": 6,
+    "forecast_bar": "2024-07-01",
+    "forecast_as_of": "2024-08-01T04:00:00+00:00",
+    "status": "evaluated",
+    "supervised_train_count": 72,
+    "target_bar": "2025-01-01",
+    "target_available_at": "2025-02-01T05:00:00+00:00",
+    "latest_feature_available_at": "2024-07-01T04:00:00+00:00",
+    "latest_training_feature_available_at": "2024-01-01T05:00:00+00:00",
+    "latest_training_label_available_at": "2024-08-01T04:00:00+00:00",
+    "arima_return_count": 90,
+    "arima": {
+      "status": "fit",
+      "order": [
+        2,
+        0,
+        2
+      ],
+      "failed_attempts": [],
+      "converged": true
+    }
+  },
+  {
+    "horizon": 6,
+    "forecast_bar": "2025-01-01",
+    "forecast_as_of": "2025-02-01T05:00:00+00:00",
+    "status": "evaluated",
+    "supervised_train_count": 78,
+    "target_bar": "2025-07-01",
+    "target_available_at": "2025-08-01T04:00:00+00:00",
+    "latest_feature_available_at": "2025-01-01T05:00:00+00:00",
+    "latest_training_feature_available_at": "2024-07-01T04:00:00+00:00",
+    "latest_training_label_available_at": "2025-02-01T05:00:00+00:00",
+    "arima_return_count": 96,
+    "arima": {
+      "status": "fit",
+      "order": [
+        2,
+        0,
+        2
+      ],
+      "failed_attempts": [],
+      "converged": true
+    }
+  },
+  {
+    "horizon": 6,
+    "forecast_bar": "2025-07-01",
+    "forecast_as_of": "2025-08-01T04:00:00+00:00",
+    "status": "evaluated",
+    "supervised_train_count": 84,
+    "target_bar": "2026-01-01",
+    "target_available_at": "2026-02-01T05:00:00+00:00",
+    "latest_feature_available_at": "2025-07-01T04:00:00+00:00",
+    "latest_training_feature_available_at": "2025-01-01T05:00:00+00:00",
+    "latest_training_label_available_at": "2025-08-01T04:00:00+00:00",
+    "arima_return_count": 102,
+    "arima": {
+      "status": "fit",
+      "order": [
+        2,
+        0,
+        2
+      ],
+      "failed_attempts": [],
+      "converged": true
+    }
+  },
+  {
+    "horizon": 6,
+    "forecast_bar": "2026-01-01",
+    "forecast_as_of": "2026-02-01T05:00:00+00:00",
+    "status": "evaluated",
+    "supervised_train_count": 90,
+    "target_bar": "2026-07-01",
+    "target_available_at": "2026-08-01T04:00:00+00:00",
+    "latest_feature_available_at": "2026-01-01T05:00:00+00:00",
+    "latest_training_feature_available_at": "2025-07-01T04:00:00+00:00",
+    "latest_training_label_available_at": "2026-02-01T05:00:00+00:00",
+    "arima_return_count": 108,
+    "arima": {
+      "status": "fit",
+      "order": [
+        2,
+        0,
+        2
+      ],
+      "failed_attempts": [],
+      "converged": true
+    }
+  },
+  {
+    "horizon": 6,
+    "forecast_bar": "2026-07-01",
+    "forecast_as_of": "2026-08-01T04:00:00+00:00",
+    "status": "skipped",
+    "supervised_train_count": 96,
+    "reason": "evaluation target unavailable"
+  }
+]

@@ -1,0 +1,169 @@
+{
+  "ticker": "AAPL",
+  "snapshot_sha256": "b81d1765519dd78efce801df44adbd07dbf18ba15bc5aaecbc8ed34d29e9f98c",
+  "evaluation_as_of": "2026-11-05T20:37:00+00:00",
+  "run_utc": "2026-11-05T20:54:19.184065+00:00",
+  "source_commit": "3b4030eda5acb80528bfe43d5897fc299bc30122",
+  "mode": "repaired",
+  "legacy_arima_source_sha256": null,
+  "source_sha256": {
+    "pipeline\\simulate.py": "9841aeb11156543d02c72b213f68fd770a4b543203b00c8f462b28dd9babffd4",
+    "pipeline\\temporal.py": "f44b6f81d3a6eab74b27bbfe83ff063a316e05c899ec241ff634043477e142de",
+    "experiments\\leakage_audit\\corrected_capture.py": "10d0c6295af06eb02935e6181da8136e404e070e1d65f8713a6b335c60e3c696"
+  },
+  "python": "3.14.3",
+  "versions": {
+    "numpy": "2.4.2",
+    "pandas": "3.0.1",
+    "yfinance": "1.2.0",
+    "statsmodels": "0.14.6",
+    "scikit-learn": "1.8.0"
+  },
+  "settings": {
+    "min_train_mature": 48,
+    "step_calendar_months": 6,
+    "ridge_alpha": 1.0,
+    "rf_trees": 100,
+    "rf_seed": 42,
+    "joblib_backend": "sequential",
+    "arima": "repaired production implementation"
+  },
+  "horizons": {
+    "6": {
+      "all_evaluated_folds": 8,
+      "original_folds": 9,
+      "common_date_metrics": [
+        {
+          "model": "ARIMA",
+          "common_folds": 8,
+          "old_unrounded": {
+            "mae": 16.50253570751858,
+            "rmse": 19.337344994359952
+          },
+          "corrected_unrounded": {
+            "mae": 16.273795925920773,
+            "rmse": 20.717973135057168
+          }
+        },
+        {
+          "model": "Ridge Regression",
+          "common_folds": 8,
+          "old_unrounded": {
+            "mae": 17.690059136614245,
+            "rmse": 20.96069060451413
+          },
+          "corrected_unrounded": {
+            "mae": 20.862037242813166,
+            "rmse": 24.826754008713145
+          }
+        },
+        {
+          "model": "Random Forest",
+          "common_folds": 8,
+          "old_unrounded": {
+            "mae": 20.450369328661957,
+            "rmse": 23.877720104293108
+          },
+          "corrected_unrounded": {
+            "mae": 22.52688602982023,
+            "rmse": 26.400641775010723
+          }
+        }
+      ],
+      "skipped": [
+        {
+          "horizon": 6,
+          "forecast_bar": "2022-01-01",
+          "forecast_as_of": "2022-02-01T05:00:00+00:00",
+          "status": "skipped",
+          "supervised_train_count": 42,
+          "reason": "insufficient mature training labels"
+        },
+        {
+          "horizon": 6,
+          "forecast_bar": "2026-07-01",
+          "forecast_as_of": "2026-08-01T04:00:00+00:00",
+          "status": "skipped",
+          "supervised_train_count": 96,
+          "reason": "evaluation target unavailable"
+        }
+      ]
+    },
+    "12": {
+      "all_evaluated_folds": 6,
+      "original_folds": 8,
+      "common_date_metrics": [
+        {
+          "model": "ARIMA",
+          "common_folds": 6,
+          "old_unrounded": {
+            "mae": 21.90373640898471,
+            "rmse": 25.04962187568881
+          },
+          "corrected_unrounded": {
+            "mae": 20.764793244585643,
+            "rmse": 23.047770957153748
+          }
+        },
+        {
+          "model": "Ridge Regression",
+          "common_folds": 6,
+          "old_unrounded": {
+            "mae": 32.01860731593419,
+            "rmse": 35.53364154218619
+          },
+          "corrected_unrounded": {
+            "mae": 35.50585807893743,
+            "rmse": 40.048340819084
+          }
+        },
+        {
+          "model": "Random Forest",
+          "common_folds": 6,
+          "old_unrounded": {
+            "mae": 20.277499423805583,
+            "rmse": 22.4350631924605
+          },
+          "corrected_unrounded": {
+            "mae": 23.224369950918387,
+            "rmse": 26.447036859676338
+          }
+        }
+      ],
+      "skipped": [
+        {
+          "horizon": 12,
+          "forecast_bar": "2022-01-01",
+          "forecast_as_of": "2022-02-01T05:00:00+00:00",
+          "status": "skipped",
+          "supervised_train_count": 36,
+          "reason": "insufficient mature training labels"
+        },
+        {
+          "horizon": 12,
+          "forecast_bar": "2022-07-01",
+          "forecast_as_of": "2022-08-01T04:00:00+00:00",
+          "status": "skipped",
+          "supervised_train_count": 42,
+          "reason": "insufficient mature training labels"
+        },
+        {
+          "horizon": 12,
+          "forecast_bar": "2026-01-01",
+          "forecast_as_of": "2026-02-01T05:00:00+00:00",
+          "status": "skipped",
+          "supervised_train_count": 84,
+          "reason": "evaluation target unavailable"
+        },
+        {
+          "horizon": 12,
+          "forecast_bar": "2026-07-01",
+          "forecast_as_of": "2026-08-01T04:00:00+00:00",
+          "status": "skipped",
+          "supervised_train_count": 90,
+          "reason": "evaluation target unavailable"
+        }
+      ]
+    }
+  }
+}

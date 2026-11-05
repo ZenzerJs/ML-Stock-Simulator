@@ -1,0 +1,23 @@
+# Volatility experiment: preregistered contract
+
+**Frozen before evaluation.** Two instruments: SPY and AAPL, Yahoo Finance adjusted daily close, trailing 10 years as of acquisition. Snapshots remain private and ignored; SHA-256 and UTC acquisition time are recorded. Yahoo-adjusted history can be retrospectively revised and is not point-in-time data. No network during evaluation. Respect Yahoo Finance terms; do not redistribute data. Use only trusted pickle files.
+
+## Target and timing
+
+A forecast is made at midnight New York time following each completed exchange session, including early-close sessions. This conservative availability boundary does not claim knowledge of the actual exchange close time. XNYS sessions and exchange holidays come from a pinned `exchange_calendars` version. Reindex to its session calendar without filling missing prices. A missing price invalidates its return and the next session's return, any feature window containing either, and any target requiring them. Partial latest bars are unavailable. The target is `mean(r[t+1:t+6] ** 2)`, where `r[t] = log(adjusted_close[t] / adjusted_close[t-1])`, over the next five actual XNYS sessions, provided all five closes and the close at t exist. Units are daily squared log-return, not annualized, not intraday realized volatility, and not full HAR-RV. Target availability is the fifth subsequent session's conservative boundary. Missing sessions must not be compressed.
+
+## Fixed design
+
+- Decision candidates are every fifth calendar session, anchored at index `21 + 756 + 5` (zero-based) in the exchange session grid. Do not filter candidates based on future outcomes. Exclude unknown outcomes at frozen as-of.
+- Fit only labels whose target is available by forecast time. Use the latest 1,260 session positions, at least 756 valid mature supervised labels. Refit each forecast. GARCH uses the latest contiguous suffix, at most 1,260 known daily returns, and requires at least 756. No tuning or performance-based model selection.
+- Persistence: mean of the previous five squared daily returns including current session. Rolling: mean of the previous 21 squared returns. EWMA: lambda 0.94, initialized at the first squared return in the contiguous suffix capped at 1,260 sessions and updated through current session.
+- GARCH: zero-mean GARCH(1,1), normal errors, `arch` default optimizer, 5-step analytic forecasts, returns multiplied by 100 before fit and mean forecast variance divided by 10,000. Nonconvergence or failure is recorded, never replaced by another model.
+- HAR-style linear OLS and Ridge use identical features: squared return at t, previous-five mean squared return, previous-21 mean squared return. Ridge alpha=1 with `StandardScaler` fitted on training rows only. RF uses the same features, 100 trees, `random_state=42`, `n_jobs=1`, default remaining settings. Fixed ablation: a second Ridge adds squared-return lags 1, 2 and 9 and signed-return means over 5 and 21 sessions; same scaler and alpha. It tests added features against the base Ridge without tuning.
+- Features use only completed returns through t. All feature/label cutoffs, dates, windows, training counts and model statuses are recorded. Regime diagnostic: high recent variance when 21-session variance at forecast exceeds `0.0004` (2% daily volatility squared); otherwise typical. This fixed absolute threshold is descriptive, not selected from outcomes.
+- Score raw forecasts with MAE/RMSE in squared-return units. QLIKE is `log(max(pred, 1e-12)) + max(actual, 1e-12) / max(pred, 1e-12)`; actual variance must be finite and nonnegative. Floor finite prediction and nonnegative target at epsilon for QLIKE only; record both raw values and both floor flags, and never silently clip MAE/RMSE. Model failures/nonfinite outputs are excluded per model and reported; the primary model comparison uses only dates with successful finite forecasts from **all** models, plus separate model-specific counts/metrics. No significance or trading claims.
+
+## Fixed runtime dependencies
+
+Versions and source hashes are recorded in each manifest. Separate requirements live alongside this contract; Python package versions used for captured results will be recorded exactly. No use of the monthly return simulator's outputs for this experiment.
+
+The regime classification uses the 21-session feature known at forecast time; it is descriptive and does not affect model inputs, tuning or selection. References: [arch analytic forecasts](https://arch.readthedocs.io/en/latest/univariate/forecasting.html), [exchange_calendars](https://github.com/gerrymanoim/exchange_calendars), [scikit-learn leakage guidance](https://scikit-learn.org/stable/common_pitfalls.html).

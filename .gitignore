@@ -40,3 +40,7 @@ venv/
 # misc
 *.tsbuildinfo
 next-env.d.ts
+experiments/leakage_audit/snapshots/
+.npm-cache/
+experiments/volatility/snapshots/
+experiments/volatility/.deps/

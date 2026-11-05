@@ -71,6 +71,10 @@ interface SimulationResult {
     dateRange: string;
     nPoints: number;
   };
+  temporalAudit: {
+    backtest: Array<{ arima?: { status: string } }>;
+    final: Record<string, { arima: { status: string } }>;
+  };
   modelForecasts: ModelForecast[];
   modelScores: ModelScore[];
   backtestSeries: BacktestPoint[];
@@ -266,7 +270,10 @@ export default function SimulatorPage() {
 
                 <PriceStats stats={result.priceStats} horizon={horizon} />
 
-                <ScenarioExplainer />
+                <ScenarioExplainer arimaFallback={
+                  Object.values(result.temporalAudit.final).some((audit) => audit.arima.status === "fallback") ||
+                  result.temporalAudit.backtest.some((audit) => audit.arima?.status === "fallback")
+                } />
                 <Disclaimer compact />
               </motion.div>
             )}

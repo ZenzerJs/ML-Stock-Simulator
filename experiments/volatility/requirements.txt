@@ -1,0 +1,13 @@
+arch==8.0.0
+exchange_calendars==4.13.2
+numpy==2.4.2
+pandas==3.0.1
+scipy==1.17.0
+scikit-learn==1.8.0
+statsmodels==0.14.6
+yfinance==1.2.0
+pyluach==2.3.0
+toolz==1.2.0
+korean_lunar_calendar==0.4.0
+tzdata==2025.3
+pytest==9.1.1

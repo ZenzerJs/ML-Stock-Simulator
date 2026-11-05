@@ -141,7 +141,7 @@ export function ModelPredictions({
               </div>
 
               <div className="mt-3 text-center text-[11px] text-muted-foreground sm:text-xs">
-                from ${currentPrice.toFixed(2)}
+                from latest monthly close ${currentPrice.toFixed(2)}
               </div>
             </motion.div>
           );

@@ -1,8 +1,8 @@
 <div align="center">
 
-# 📈 ML Stock Simulator
+# 📊 ML Stock Simulator
 
-**An educational stock-forecasting workspace with transparent models, time-aware evaluation, and reproducible failure analysis.**
+**Educational forecasts with explicit temporal evaluation.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
@@ -11,7 +11,16 @@
 [![Evaluation](https://img.shields.io/badge/Evaluation-Time_Aware-6F5CEB)](experiments/leakage_audit/README.md)
 [![Trading](https://img.shields.io/badge/Live_Trading-Disabled-6B7280)](#-what-this-project-is-not)
 
-*A good forecast is only useful if the evaluation is honest.*
+**[Open live project](https://ml-stock-simulator.up.railway.app/simulator)**
+
+<details>
+<summary><strong>View the completed simulator screenshot</strong></summary>
+
+<img src="docs/images/screenshot.jpg" alt="ML Stock Simulator interface" width="900" />
+
+</details>
+
+<sub>Completed SPY six-month example on the live deployment. Displayed scenarios are illustrative, not calibrated probabilities.</sub>
 
 </div>
 
@@ -19,20 +28,20 @@
 
 ## 📋 Contents
 
-- [Why This Project](#-why-this-project)
-- [Key Features](#-key-features)
+- [Overview](#-overview)
+- [Key Capabilities](#-key-capabilities)
 - [What the Audit Revealed](#-what-the-audit-revealed)
 - [Separate Volatility Study](#-separate-volatility-study)
 - [Architecture](#-architecture)
 - [Tech Stack](#-tech-stack)
 - [Getting Started](#-getting-started)
+- [Repository Layout](#-repository-layout)
 - [Evaluation Contracts](#-evaluation-contracts)
-- [Project Structure](#-project-structure)
 - [Limits & Next Steps](#-limits--next-steps)
 
 ---
 
-## 💡 Why This Project
+## 💡 Overview
 
 ML Stock Simulator began as a way to compare financial forecasting models through an approachable web interface: choose a stock, select a horizon, and examine the predictions alongside historical error.
 
@@ -48,7 +57,7 @@ The more valuable engineering work came later. A temporal audit uncovered that t
 
 ---
 
-## ✨ Key Features
+## ✨ Key Capabilities
 
 | Feature | Description |
 |---|---|
@@ -192,17 +201,7 @@ Historical Yahoo acquisition requires network access; the test suite does not. P
 
 ---
 
-## 🔒 Evaluation Contracts
-
-1. **Calendar-aligned horizons.** A six-month forecast means the close six **calendar months** ahead, not the sixth available row after gaps.
-2. **Conservative information cutoffs.** A monthly bar is available no earlier than the start of the following month in New York time; partial months are excluded.
-3. **Mature labels only.** Supervised targets must have reached their endpoints before training; missing periods are never bridged by filling or shifting rows together.
-4. **Explicit ARIMA status.** Fit order, convergence, fallback, and unavailable return histories are recorded.
-5. **Auditable outputs.** Source hashes, configuration, raw predictions, metric calculations, forecast dates, and exclusions are retained where captured.
-
----
-
-## 📁 Project Structure
+## 📁 Repository Layout
 
 ```text
 ML-Stock-Simulator/
@@ -217,6 +216,16 @@ ML-Stock-Simulator/
 ├── tests/                    # Offline Python regression tests
 └── package-lock.json         # Locked JavaScript dependencies
 ```
+
+---
+
+## 🔒 Evaluation Contracts
+
+1. **Calendar-aligned horizons.** A six-month forecast means the close six **calendar months** ahead, not the sixth available row after gaps.
+2. **Conservative information cutoffs.** A monthly bar is available no earlier than the start of the following month in New York time; partial months are excluded.
+3. **Mature labels only.** Supervised targets must have reached their endpoints before training; missing periods are never bridged by filling or shifting rows together.
+4. **Explicit ARIMA status.** Fit order, convergence, fallback, and unavailable return histories are recorded.
+5. **Auditable outputs.** Source hashes, configuration, raw predictions, metric calculations, forecast dates, and exclusions are retained where captured.
 
 ---
 
